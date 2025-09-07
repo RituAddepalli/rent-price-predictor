@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rent Price Prediction</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 350px;
+      text-align: center;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 25px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      text-align: left;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    button:hover {
+      background: #218838;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #28a745; /* green */
+    }
+    #error {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Rent Price Prediction</h2>
+    <form id="rentForm">
+      <label for="area">Area (sqft):</label>
+      <input type="number" id="area" value="2599" required>
+
+      <label for="bedrooms">Bedrooms:</label>
+      <input type="number" id="bedrooms" value="2" required>
+
+      <label for="age">Age of House (years):</label>
+      <input type="number" id="age" value="3" required>
+
+      <label for="location">Location:</label>
+      <select id="location" required>
+        <option value="Downtown">Downtown</option>
+        <option value="Suburbs">Suburbs</option>
+        <option value="Countryside">Countryside</option>
+        <option value="Near Ocean">Near Ocean</option>
+      </select>
+
+      <button type="submit">Predict Rent</button>
+    </form>
+
+    <p id="result"></p>
+    <p id="error"></p>
+  </div>
+
+  <script>
+    document.getElementById("rentForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const area = parseInt(document.getElementById("area").value);
+      const bedrooms = parseInt(document.getElementById("bedrooms").value);
+      const age = parseInt(document.getElementById("age").value);
+      const location = document.getElementById("location").value;
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/predict", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ area, bedrooms, age, location })
+        });
+
+        const data = await response.json();
+
+        if (data.predicted_rent !== undefined) {
+          // Format rent with ₹ and commas
+          const formatted = "₹" + Number(data.predicted_rent).toLocaleString("en-IN");
+          document.getElementById("result").innerText = "Predicted Rent: " + formatted;
+          document.getElementById("error").innerText = "";
+        } else {
+          throw new Error("Invalid JSON response");
+        }
+      } catch (err) {
+        document.getElementById("error").innerText = "⚠ Failed to fetch from server. Make sure Flask is running";
+        document.getElementById("result").innerText = "";
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
